@@ -1,0 +1,121 @@
+*📂 Step 1: Create Database;
+
+			CREATE DATABASE Hr_Analytics_db;
+			USE hr_analytics_db;
+
+==		*📂 Step 2: Create Departments Table,
+			    	CREATE TABLE departments (
+						department_id INT PRIMARY KEY,
+						department_name VARCHAR(100),
+						location VARCHAR(50)
+					);
+
+==		*📂 Step 3: Create Employees Table*
+			   	CREATE TABLE Employees (
+					employee_id INT PRIMARY KEY,
+					employee_name VARCHAR(100),
+					department_id INT,
+					job_title VARCHAR(100),
+					hire_date DATE,
+					salary DECIMAL(12,2),
+					employment_status VARCHAR(20),
+					FOREIGN KEY (department_id) REFERENCES departments(department_id)
+				);
+
+==		*📂 Step 4: Create Attendance Table*
+				CREATE TABLE attendance (
+					attendance_id INT PRIMARY KEY,
+					employee_id INT,
+					attendance_date DATE,
+					attendance_status VARCHAR(20),
+					FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+				);
+
+==		*📂 Step 5: Create Promotions Table*
+				CREATE TABLE promotions (
+					promotion_id INT PRIMARY KEY,
+					employee_id INT,
+					promotion_date DATE,
+					old_job_title VARCHAR(100),
+					new_job_title VARCHAR(100),
+					FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+				);
+
+==		*📂 Step 6: Insert  Departments;
+				INSERT INTO departments VALUES
+				(101,'Data Analytics','Mumbai'),
+				(102,'Finance','Delhi'),
+				(103,'Human Resources','Bangalore'),
+				(104,'Technology','Pune'),
+				(105,'Operations','Hyderabad');
+
+==		*📂 Step 7: Insert  Employees,
+				INSERT INTO employees VALUES
+				(1,'Rahul Sharma',101,'Data Analyst','2022-01-10',850000,'Active'),
+				(2,'Priya Verma',102,'Financial Analyst','2021-05-15',920000,'Active'),
+				(3,'Amit Patel',104,'Software Engineer','2020-08-20',1200000,'Active'),
+				(4,'Sneha Joshi',103,'HR Specialist','2023-02-10',650000,'Active'),
+				(5,'Rohan Gupta',105,'Operations Analyst','2022-11-05',750000,'Resigned');
+
+==		*📂 Step 8: Insert  Attendance,
+				INSERT INTO attendance VALUES
+				(1,1,'2025-01-02','Present'),
+				(2,1,'2025-01-03','Present'),
+				(3,2,'2025-01-02','Present'),
+				(4,2,'2025-01-03','Absent'),
+				(5,3,'2025-01-02','Present'),
+				(6,4,'2025-01-02','Present'),
+				(7,5,'2025-01-02','Absent');
+
+==		*📂 Step 9: Insert  Promotions,
+				INSERT INTO promotions VALUES
+				(1,1,'2024-06-01','Junior Data Analyst','Data Analyst'),
+				(2,3,'2024-01-15','Software Engineer','Senior Software Engineer');
+====
+==        Q1:  Total Employees
+				 SELECT  COUNT(employee_id) AS Total_Employees
+				 FROM EMPLOYEES;
+
+==        Q2:  Active Employees
+				select * from employees
+				where employment_status= 'Active';
+
+==		 Q3: Department-wise Employee Count;
+				SELECT d.department_name, COUNT(e.employee_id) AS employee_count
+				FROM departments d
+				LEFT JOIN employees e ON d.department_id = e.department_id
+				GROUP BY d.department_name
+				ORDER BY employee_count DESC;
+
+==		 Q4: Average Salary by Department*
+				SELECT d.department_name, ROUND(AVG(e.salary), 2) AS average_salary
+				FROM employees e
+				JOIN departments d ON e.department_id = d.department_id
+				GROUP BY d.department_name
+				ORDER BY average_salary DESC;
+
+==		Q5: Identify Highest-Paid Employees*
+				SELECT  employee_name, job_title, salary
+				FROM employees
+				ORDER BY salary DESC
+			
+
+==		Q6: Calculate Attrition Rate*
+				SELECT ROUND(100.0 * SUM(CASE WHEN employment_status = 'Resigned' THEN 1 ELSE 0 END) / COUNT(*), 2) AS attrition_rate
+				FROM employees;
+
+==		Q7: Calculate Attendance Rate*
+				SELECT employee_id, ROUND(100.0 * SUM(CASE WHEN attendance_status = 'Present' THEN 1 ELSE 0 END) / COUNT(*), 2) AS attendance_rate
+				FROM attendance
+				GROUP BY employee_id;
+
+==		 Q8: Rank Employees by Salary*
+				SELECT employee_name, department_id, salary,
+				DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS salary_rank
+				FROM employees;
+
+==		 Q9: Find Employees Who Were Promoted*
+				SELECT e.employee_name, p.old_job_title, p.new_job_title, p.promotion_date
+				FROM employees e
+				JOIN promotions p ON e.employee_id = p.employee_id
+				ORDER BY p.promotion_date;
